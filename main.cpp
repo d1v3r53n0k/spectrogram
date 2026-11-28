@@ -1,3 +1,5 @@
+#include "graphics.hpp"
+
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -19,7 +21,7 @@ int WINAPI wWinMain(
     wcex.lpfnWndProc = WindowProc;
     wcex.hInstance = hInstance;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
+    wcex.hbrBackground = NULL;
     wcex.lpszClassName = WC_MAINCLASS;
 
     if (!RegisterClassEx(&wcex)) {
@@ -45,6 +47,10 @@ int WINAPI wWinMain(
         return 1;
     }
 
+    if(!InitGraphics(hWnd)) {
+        return 1;
+    }
+
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
@@ -53,6 +59,8 @@ int WINAPI wWinMain(
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+    CleanupGraphics();
 
     return 0;
 }
@@ -69,6 +77,11 @@ LRESULT CALLBACK WindowProc(
         }
         case WM_DESTROY: {
             PostQuitMessage(0);
+            return 0;
+        }
+        case WM_PAINT: {
+            RenderFrame();
+            ValidateRect(hWnd, NULL);
             return 0;
         }
         default: {
